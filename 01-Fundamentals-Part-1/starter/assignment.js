@@ -16,8 +16,8 @@
 //
 // let finlandPopulation = 6_000_000;
 // console.log(population > finlandPopulation)
-
-const markMass = 78;
-const markHeight = 1.69;
-
-console.log(markMass / markHeight ** 2 )
+//
+// const markMass = 78;
+// const markHeight = 1.69;
+//
+// console.log(markMass / markHeight ** 2 )
