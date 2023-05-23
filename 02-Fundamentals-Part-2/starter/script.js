@@ -590,8 +590,6 @@ console.log(calcAverage(tips));
 
 // new master edit
 
-// new master edit
-
 
 
 
