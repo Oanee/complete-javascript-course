@@ -620,3 +620,5 @@ console.log(calcAverage(tips));
 // console.log(tips);
 // console.log(totals);
 // console.log(calcAverage(totals));
+
+// new commit from work
