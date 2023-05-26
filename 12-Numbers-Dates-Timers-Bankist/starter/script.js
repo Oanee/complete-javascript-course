@@ -96,6 +96,13 @@ const formatMovementDate = (date, locale) => {
   return new Intl.DateTimeFormat(locale).format(date)
 }
 
+const formatCur = (value, locale, currency) => {
+  return new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency: currency,
+  }).format(value)
+}
+
 const displayMovements = function (acc, movements, sort = false) {
   containerMovements.innerHTML = '';
 
@@ -109,13 +116,15 @@ const displayMovements = function (acc, movements, sort = false) {
 
     const displayDate = formatMovementDate(date, acc.locale)
 
+    const formattedMov = formatCur(mov, acc.locale, acc.currency)
+
     const html = `
       <div class="movements__row">
         <div class="movements__type movements__type--${type}">${
       i + 1
     } ${type}</div>
         <div class="movements__date">${displayDate}</div>
-        <div class="movements__value">${mov.toFixed(2)}€</div>
+        <div class="movements__value">${formattedMov}</div>
       </div>
     `;
 
@@ -125,19 +134,19 @@ const displayMovements = function (acc, movements, sort = false) {
 
 const calcDisplayBalance = function (acc) {
   acc.balance = acc.movements.reduce((acc, mov) => acc + mov, 0);
-  labelBalance.textContent = `${acc.balance.toFixed(2)}€`;
+  labelBalance.textContent = formatCur(acc.balance, acc.locale, acc.currency)
 };
 
 const calcDisplaySummary = function (acc) {
   const incomes = acc.movements
     .filter(mov => mov > 0)
     .reduce((acc, mov) => acc + mov, 0);
-  labelSumIn.textContent = `${incomes.toFixed(2)}€`;
+  labelSumIn.textContent = formatCur(incomes, acc.locale, acc.currency);
 
   const out = acc.movements
     .filter(mov => mov < 0)
     .reduce((acc, mov) => acc + mov, 0);
-  labelSumOut.textContent = `${Math.abs(out).toFixed(2)}€`;
+  labelSumOut.textContent = formatCur(Math.abs(out), acc.locale, acc.currency);
 
   const interest = acc.movements
     .filter(mov => mov > 0)
@@ -147,7 +156,7 @@ const calcDisplaySummary = function (acc) {
       return int >= 1;
     })
     .reduce((acc, int) => acc + int, 0);
-  labelSumInterest.textContent = `${interest.toFixed(2)}€`;
+  labelSumInterest.textContent = formatCur(interest, acc.locale, acc.currency);;
 };
 
 const createUsernames = function (accs) {
@@ -172,15 +181,32 @@ const updateUI = function (acc) {
   calcDisplaySummary(acc);
 };
 
+const startLogOutTimer = () => {
+  const tick = () => {
+    const min = String(Math.trunc(time / 60)).padStart(2, 0)
+    const sec = String(time % 60).padStart(2, 0)
+
+    labelTimer.textContent = `${min}:${sec}`
+
+    if (time === 0) {
+      clearInterval(timer)
+      labelWelcome.textContent = 'Log in to get started'
+      containerApp.style.opacity = 0
+    }
+
+    time--
+  }
+  let time = 120
+
+  tick()
+  timer = setInterval(tick, 1000)
+  return timer
+}
+
+
 ///////////////////////////////////////
 // Event handlers
-let currentAccount;
-
-currentAccount = account1
-updateUI(currentAccount)
-containerApp.style.opacity = 100
-
-
+let currentAccount, timer;
 
 btnLogin.addEventListener('click', function (e) {
   // Prevent form from submitting
@@ -213,6 +239,9 @@ btnLogin.addEventListener('click', function (e) {
     // Clear input fields
     inputLoginUsername.value = inputLoginPin.value = '';
     inputLoginPin.blur();
+
+    if (timer) clearInterval(timer)
+    timer = startLogOutTimer()
 
     // Update UI
     updateUI(currentAccount);
@@ -252,12 +281,17 @@ btnLoan.addEventListener('click', function (e) {
 
   if (amount > 0 && currentAccount.movements.some(mov => mov >= amount * 0.1)) {
     // Add movement
-    currentAccount.movements.push(amount);
+    setTimeout(()=>{
+      currentAccount.movements.push(amount);
 
-    currentAccount.movementsDates.push(new Date().toISOString())
+      currentAccount.movementsDates.push(new Date().toISOString())
 
-    // Update UI
-    updateUI(currentAccount);
+      // Update UI
+      updateUI(currentAccount);
+
+      clearInterval(timer)
+      timer = startLogOutTimer()
+    }, 2500)
   }
   inputLoanAmount.value = '';
 });
@@ -295,3 +329,15 @@ btnSort.addEventListener('click', function (e) {
 /////////////////////////////////////////////////
 /////////////////////////////////////////////////
 // LECTURES
+
+// const ingredients = ['olives', 'spinach']
+// const pizzaTimer = setTimeout((ing1, ing2) => {
+//   console.log(`Pizza is with ${ing1} and ${ing2}`)
+// }, 3000, ...ingredients)
+//
+// if (ingredients.includes('spinach')) clearTimeout(pizzaTimer)
+//
+// setInterval(() => {
+//   const now = new Date()
+//   console.log(now)
+// }, 1000)
