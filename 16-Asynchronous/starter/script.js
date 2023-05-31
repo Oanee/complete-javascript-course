@@ -37,7 +37,7 @@ const countriesContainer = document.querySelector('.countries');
 // getCountryData('usa')
 // getCountryData('romania')
 
-const renderCountry = function(data, className = '') {
+const renderCountry = function (data, className = '') {
 	const html = `
 		<article class='country ${className}'>
           <img class='country__img' src='${data.flag}' />
@@ -82,6 +82,35 @@ const renderCountry = function(data, className = '') {
 //
 // getCountryAndNeighbor('portugal')
 
+const getCountryAndNeighbor = function (country) {
+	const request = new XMLHttpRequest()
+	request.open('GET', `https://restcountries.com/v2/name/${country}`)
+	request.send()
+
+	request.addEventListener('load', function () {
+		const [data] = JSON.parse(this.responseText)
+		console.log(data)
+
+		renderCountry(data)
+
+		const neighbour = data.borders?.[0]
+
+		if (!neighbour) return
+		const request = new XMLHttpRequest()
+		request.open('GET', `https://restcountries.com/v2/alpha/${neighbour}`)
+		request.send()
+
+		request.addEventListener('load', function () {
+			const data2 = JSON.parse(this.responseText)
+			console.log(data2)
+
+			renderCountry(data2, 'neighbour')
+		})
+	})
+}
+
+getCountryAndNeighbor('portugal')
+
 // add new code
 
 // const getCountryData = function (country) {
@@ -96,20 +125,20 @@ const renderCountry = function(data, className = '') {
 // 		})
 // }
 
-const renderError = function(msg) {
+const renderError = function (msg) {
 	countriesContainer.insertAdjacentHTML('beforeend', msg)
 }
 
-const getJSON = function(url, errorMSG = `Something went wrong`) {
+const getJSON = function (url, errorMSG = `Something went wrong`) {
 	return fetch(url)
-		.then(response=> {
+		.then(response => {
 
-			if(!response.ok) {
+			if (!response.ok) {
 				throw new Error(`${errorMSG} (${response.status})`)
 			}
 
 			return response.json()
-			})
+		})
 }
 
 
@@ -258,7 +287,7 @@ const getJSON = function(url, errorMSG = `Something went wrong`) {
 // })()
 
 
-const get3Countries = async function(c1, c2, c3) {
+const get3Countries = async function (c1, c2, c3) {
 	try {
 		// const [data1] = await getJSON(`https://restcountries.com/v2/name/${c1}`)
 		// const [data2] = await getJSON(`https://restcountries.com/v2/name/${c2}`)
